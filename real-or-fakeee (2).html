@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REAL or FAKEEE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0d0d;
+    --bg-card: #161616;
+    --bg-elev: #1f1f1f;
+    --ink: #ededed;
+    --ink-muted: #888;
+    --real: #00d97e;
+    --real-glow: rgba(0, 217, 126, 0.3);
+    --fake: #ff2e63;
+    --fake-glow: rgba(255, 46, 99, 0.3);
+    --accent: #ffeb3b;
+    --border: rgba(237, 237, 237, 0.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'IBM Plex Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.015) 0px, rgba(255, 255, 255, 0.015) 1px, transparent 1px, transparent 3px);
+    pointer-events: none;
+    z-index: 1;
+  }
+  .app {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 32px 20px 60px;
+    position: relative;
+    z-index: 2;
+  }
+  /* Header */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .logo {
+    font-family: 'Anton', sans-serif;
+    font-size: 26px;
+    letter-spacing: 0.05em;
+  }
+  .logo .real { color: var(--real); }
+  .logo .fake { color: var(--fake); }
+  .header-info {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--ink-muted);
+  }
+  /* START SCREEN */
+  .start-screen { text-align: center; padding-top: 20px; }
+  .start-title {
+    font-family: 'Anton', sans-serif;
+    font-size: 88px;
+    line-height: 0.9;
+    letter-spacing: 0.02em;
+    margin-bottom: 8px;
+  }
+  .start-title .glitch-real { color: var(--real); display: block; }
+  .start-title .or { color: var(--ink-muted); font-size: 32px; display: block; margin: 12px 0; letter-spacing: 0.4em; }
+  .start-title .glitch-fake {
+    color: var(--fake);
+    display: block;
+    animation: glitchText 4s infinite;
+  }
+  @keyframes glitchText {
+    0%, 92%, 100% { transform: translate(0); }
+    93% { transform: translate(-2px, 1px); }
+    94% { transform: translate(2px, -1px); }
+    95% { transform: translate(-1px, -1px); }
+    96% { transform: translate(1px, 1px); }
+  }
+  .tagline {
+    font-style: italic;
+    font-size: 14px;
+    color: var(--ink-muted);
+    margin: 32px 0 40px;
+    max-width: 360px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.7;
+  }
+  .tagline strong { color: var(--accent); font-style: normal; font-weight: 600; }
+  .rules {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 24px;
+    text-align: left;
+    margin-bottom: 32px;
+    font-size: 13px;
+    line-height: 1.9;
+  }
+  .rules-title {
+    font-family: 'Anton', sans-serif;
+    font-size: 18px;
+    margin-bottom: 12px;
+    letter-spacing: 0.05em;
+  }
+  .rules-list { padding-left: 0; list-style: none; color: var(--ink-muted); }
+  .rules-list li { padding-left: 24px; position: relative; }
+  .rules-list li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+  }
+  /* BUTTONS */
+  .btn {
+    background: var(--ink);
+    color: var(--bg);
+    border: none;
+    padding: 18px 48px;
+    font-family: 'Anton', sans-serif;
+    font-size: 18px;
+    letter-spacing: 0.15em;
+    cursor: pointer;
+    transition: transform 0.12s ease, box-shadow 0.2s ease;
+    text-transform: uppercase;
+  }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 0 -2px var(--accent); }
+  .btn:active { transform: translateY(0); }
+  .btn-real {
+    background: var(--real);
+    color: var(--bg);
+    box-shadow: 0 0 0 0 var(--real-glow);
+  }
+  .btn-real:hover { box-shadow: 0 0 30px 4px var(--real-glow); transform: translateY(-2px); }
+  .btn-fake {
+    background: var(--fake);
+    color: var(--bg);
+  }
+  .btn-fake:hover { box-shadow: 0 0 30px 4px var(--fake-glow); transform: translateY(-2px); }
+  /* GAME SCREEN */
+  .game-screen { display: none; }
+  .game-screen.active { display: block; }
+  .progress-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--ink-muted);
+  }
+  .progress {
+    display: flex;
+    gap: 6px;
+  }
+  .progress-block {
+    width: 18px;
+    height: 4px;
+    background: var(--bg-elev);
+  }
+  .progress-block.done { background: var(--accent); }
+  .progress-block.current { background: var(--ink); }
+  .score-display {
+    font-family: 'Anton', sans-serif;
+    font-size: 20px;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+  }
+  .streak-badge {
+    display: inline-block;
+    font-size: 10px;
+    background: var(--fake);
+    color: var(--bg);
+    padding: 2px 8px;
+    margin-left: 8px;
+    letter-spacing: 0.1em;
+    animation: pulseBadge 1s ease infinite;
+  }
+  @keyframes pulseBadge {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+  }
+  /* PHASE LABELS */
+  .phase-label {
+    font-family: 'Anton', sans-serif;
+    font-size: 14px;
+    letter-spacing: 0.3em;
+    text-align: center;
+    color: var(--ink-muted);
+    margin-bottom: 16px;
+  }
+  /* SCENE PHASE */
+  .scene-stage {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 24px;
+    margin-bottom: 24px;
+    min-height: 420px;
+    display: flex;
+    flex-direction: column;
+  }
+  .scene-title {
+    font-family: 'Anton', sans-serif;
+    font-size: 24px;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+    text-align: center;
+  }
+  .scene-subtitle {
+    text-align: center;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--ink-muted);
+    margin-bottom: 20px;
+  }
+  .countdown {
+    text-align: center;
+    font-family: 'Anton', sans-serif;
+    font-size: 40px;
+    color: var(--accent);
+    margin-bottom: 16px;
+    letter-spacing: 0.05em;
+  }
+  .countdown.warning { color: var(--fake); animation: pulseBadge 0.4s ease infinite; }
+  .emoji-grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    align-content: center;
+    justify-content: center;
+    padding: 16px;
+    background: var(--bg-elev);
+    border-radius: 2px;
+    min-height: 380px;
+  }
+  .emoji-cell {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 60px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 6px;
+    animation: cellFadeIn 0.4s ease backwards;
+  }
+  @keyframes cellFadeIn {
+    from { opacity: 0; transform: scale(0.8); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  /* BLACKOUT PHASE */
+  .blackout-stage {
+    background: #000;
+    border: 1px solid var(--border);
+    min-height: 420px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .blackout-stage::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(circle at 30% 40%, rgba(255, 46, 99, 0.08), transparent 50%),
+      radial-gradient(circle at 70% 60%, rgba(0, 217, 126, 0.06), transparent 50%);
+  }
+  .blackout-text {
+    font-family: 'Anton', sans-serif;
+    font-size: 56px;
+    letter-spacing: 0.15em;
+    color: var(--ink-muted);
+    text-align: center;
+    position: relative;
+    z-index: 1;
+    animation: glitchText 2s infinite;
+  }
+  .blackout-sub {
+    font-size: 11px;
+    color: var(--ink-muted);
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    margin-top: 12px;
+    position: relative;
+    z-index: 1;
+  }
+  /* QUESTION PHASE */
+  .question-stage {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 40px 28px;
+    margin-bottom: 24px;
+    min-height: 280px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .question-meta {
+    text-align: center;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    color: var(--ink-muted);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .question-text {
+    font-family: 'Anton', sans-serif;
+    font-size: 30px;
+    line-height: 1.25;
+    text-align: center;
+    letter-spacing: 0.01em;
+    padding: 20px 0;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .choice-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .choice-row .btn {
+    width: 100%;
+    padding: 22px 8px;
+    font-size: 22px;
+    letter-spacing: 0.2em;
+  }
+  /* FEEDBACK */
+  .verdict {
+    text-align: center;
+    padding: 32px 24px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    margin-bottom: 24px;
+    animation: cellFadeIn 0.3s ease;
+  }
+  .verdict.correct { border-left: 4px solid var(--real); }
+  .verdict.incorrect { border-left: 4px solid var(--fake); }
+  .verdict-result {
+    font-family: 'Anton', sans-serif;
+    font-size: 36px;
+    letter-spacing: 0.1em;
+    margin-bottom: 8px;
+  }
+  .verdict.correct .verdict-result { color: var(--real); }
+  .verdict.incorrect .verdict-result { color: var(--fake); }
+  .verdict-points {
+    font-size: 12px;
+    color: var(--ink-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    margin-bottom: 16px;
+  }
+  .verdict-points strong { color: var(--accent); }
+  .verdict-explain {
+    font-size: 13px;
+    color: var(--ink);
+    line-height: 1.7;
+    background: var(--bg-elev);
+    padding: 14px 18px;
+    border-radius: 2px;
+    margin-bottom: 20px;
+  }
+  .verdict-explain em { color: var(--accent); font-style: normal; }
+  /* END SCREEN */
+  .end-screen { display: none; text-align: center; }
+  .end-screen.active { display: block; }
+  .end-title {
+    font-family: 'Anton', sans-serif;
+    font-size: 56px;
+    letter-spacing: 0.05em;
+    line-height: 1;
+    margin-bottom: 32px;
+  }
+  .end-title .num { color: var(--accent); font-size: 96px; display: block; }
+  .verdict-box {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 32px;
+    margin-bottom: 24px;
+  }
+  .verdict-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    color: var(--ink-muted);
+    margin-bottom: 12px;
+  }
+  .verdict-headline {
+    font-family: 'Anton', sans-serif;
+    font-size: 28px;
+    line-height: 1.2;
+    margin-bottom: 12px;
+  }
+  .verdict-desc {
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--ink-muted);
+    font-style: italic;
+  }
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 32px;
+  }
+  .stat-box {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 20px 8px;
+  }
+  .stat-value {
+    font-family: 'Anton', sans-serif;
+    font-size: 32px;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .stat-label {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--ink-muted);
+  }
+  @media (max-width: 540px) {
+    .start-title { font-size: 56px; }
+    .emoji-grid { grid-template-columns: repeat(3, 1fr); }
+    .emoji-cell { font-size: 44px; }
+    .blackout-text { font-size: 36px; }
+    .question-text { font-size: 22px; }
+    .choice-row .btn { font-size: 18px; padding: 18px 8px; }
+    .end-title { font-size: 40px; }
+    .end-title .num { font-size: 72px; }
+    .verdict-headline { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="logo"><span class="real">REAL</span> or <span class="fake">FAKEEE</span></div>
+    <div class="header-info" id="header-info">5 SCENES · 4S EACH</div>
+  </div>
+
+  <!-- START SCREEN -->
+  <div id="start-screen" class="start-screen">
+    <h1 class="start-title">
+      <span class="glitch-real">REAL</span>
+      <span class="or">— or —</span>
+      <span class="glitch-fake">FAKEEE</span>
+    </h1>
+    <p class="tagline">Trust your memory. <strong>Your brain is lying to you.</strong></p>
+    <div class="rules">
+      <div class="rules-title">THE TEST</div>
+      <ul class="rules-list">
+        <li>Stare at a scene for 4 seconds</li>
+        <li>The scene disappears</li>
+        <li>4 questions appear about what you saw</li>
+        <li>Tap REAL if it was there, FAKEEE if it wasn't</li>
+        <li>Consecutive correct answers stack a streak bonus</li>
+      </ul>
+    </div>
+    <button class="btn" id="start-btn">Begin the test</button>
+  </div>
+
+  <!-- GAME SCREEN -->
+  <div id="game-screen" class="game-screen">
+    <div class="progress-row">
+      <div class="progress" id="progress"></div>
+      <div class="score-display">
+        <span id="score">0</span> PTS<span id="streak-badge"></span>
+      </div>
+    </div>
+    <div id="phase-container"></div>
+  </div>
+
+  <!-- END SCREEN -->
+  <div id="end-screen" class="end-screen">
+    <h1 class="end-title">
+      <span class="num" id="final-score">0</span>
+      points
+    </h1>
+    <div class="verdict-box">
+      <div class="verdict-label">Your memory verdict</div>
+      <div class="verdict-headline" id="verdict-headline"></div>
+      <div class="verdict-desc" id="verdict-desc"></div>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-box">
+        <div class="stat-value" id="stat-correct">0</div>
+        <div class="stat-label">CORRECT</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value" id="stat-fooled">0</div>
+        <div class="stat-label">FOOLED</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value" id="stat-streak">0</div>
+        <div class="stat-label">BEST STREAK</div>
+      </div>
+    </div>
+    <button class="btn" id="restart-btn">Test me again</button>
+  </div>
+</div>
+
+<script>
+/* ---------- SCENE DATA ----------
+   grid: 6x8 (48 cells) of emojis. Empty string = blank cell.
+   statements: array of { text, answer ('REAL'|'FAKEEE'), explain }
+   - REAL = something actually in the grid
+   - FAKEEE = something NOT in the grid (the false memory)
+*/
+
+const SCENES = [
+  {
+    name: "MESSY HOSTEL ROOM",
+    grid: [
+      "🛏️","🎒","💻",
+      "⚽","🧥","🎧",
+      "📚","🍕","🧦"
+    ],
+    statements: [
+      { text: "There was definitely a football kicking around, right?", answer: "REAL", explain: "Yep, ⚽ was right there. You actually saw this one." },
+      { text: "Was there a sneaky little cat hiding somewhere?", answer: "FAKEEE", explain: "No cat. No pet of any kind. Your brain auto-added a 'cozy roomie vibe' that never existed." },
+      { text: "Pizza slice or no pizza slice?", answer: "REAL", explain: "🍕 was there — classic hostel food. People often miss this because they're scanning for furniture." },
+      { text: "Swear there was an empty energy drink can in the chaos?", answer: "FAKEEE", explain: "Zero drinks anywhere. 'Messy student room' = brain inserts caffeine. You fell for the stereotype." }
+    ]
+  },
+  {
+    name: "AIRPORT CHECK-IN",
+    grid: [
+      "🛂","🧳","✈️",
+      "🎫","☕","🕒",
+      "💼","🎒","📱"
+    ],
+    statements: [
+      { text: "Was there a clock somewhere? Airports always have clocks…", answer: "REAL", explain: "🕒 was there. Funny — people doubt this one because it 'feels too obvious.'" },
+      { text: "There was a dog in a travel carrier, wasn't there?", answer: "FAKEEE", explain: "No animals. Airports feel like they should have one — your brain delivered." },
+      { text: "Coffee cup somewhere in the scene?", answer: "REAL", explain: "☕ was clearly there. Airport + coffee = real this time." },
+      { text: "Was there a passport sitting on the counter?", answer: "FAKEEE", explain: "Tricky one. There was 🛂 (passport control sign) but NO actual passport. Your brain confused the symbol for the object." }
+    ]
+  },
+  {
+    name: "GAMING SETUP",
+    grid: [
+      "🖥️","⌨️","🎮",
+      "🎧","🍕","🌙",
+      "🖱️","🪑","💡"
+    ],
+    statements: [
+      { text: "Pizza slice on the desk — real or did you imagine it?", answer: "REAL", explain: "🍕 was right in the middle. You actually saw this." },
+      { text: "There was an energy drink can sitting somewhere, yeah?", answer: "FAKEEE", explain: "Nope. Gamer scenes scream 'energy drink' so loud your brain just… added one." },
+      { text: "Was it nighttime in this scene?", answer: "REAL", explain: "The 🌙 confirmed nighttime. Gamers gonna game at night." },
+      { text: "There was a microphone for streaming, wasn't there?", answer: "FAKEEE", explain: "No mic anywhere. Modern gaming setup = brain inserts a streaming mic. It wasn't there." }
+    ]
+  },
+  {
+    name: "COLLEGE CLASSROOM",
+    grid: [
+      "🧑‍🏫","📚","✏️",
+      "🎒","☀️","🪟",
+      "🪑","📐","📓"
+    ],
+    statements: [
+      { text: "Was there actually a teacher in the room?", answer: "REAL", explain: "🧑‍🏫 was there. Easy to miss when you're scanning for objects, not people." },
+      { text: "Globe on the teacher's desk — real or fake?", answer: "FAKEEE", explain: "No globe. Classrooms 'should have' globes, so the brain just… put one there." },
+      { text: "Sun was shining through the window, right?", answer: "REAL", explain: "☀️ was there in the window. Daytime confirmed." },
+      { text: "Was there a chalkboard or whiteboard in the scene?", answer: "FAKEEE", explain: "Classic false memory. NO board of any kind. Classrooms 'must' have one — except this one didn't." }
+    ]
+  },
+  {
+    name: "KITCHEN CHAOS",
+    grid: [
+      "🍳","🥚","🔪",
+      "🧅","🧄","🌶️",
+      "🍅","🧂","🥄"
+    ],
+    statements: [
+      { text: "Eggs in the scene? Or did you make that up?", answer: "REAL", explain: "🥚 was definitely there. Egg + frying pan combo." },
+      { text: "Sneaky slice of cake hiding somewhere?", answer: "FAKEEE", explain: "Zero sweets. Just savory items. Brain craves dessert and invented one." },
+      { text: "Both garlic AND onions in the scene?", answer: "REAL", explain: "🧄 and 🧅 — both there. People usually remember one and forget the other." },
+      { text: "There was a bottle of olive oil on the counter, right?", answer: "FAKEEE", explain: "Nope. 'Kitchen with garlic and tomatoes' = brain immediately imagines olive oil. You fell for the scene logic." }
+    ]
+  }
+];
+
+let state = {
+  current: 0,
+  qIndex: 0,
+  score: 0,
+  streak: 0,
+  bestStreak: 0,
+  correct: 0,
+  fooled: 0
+};
+
+const $ = (id) => document.getElementById(id);
+
+function startGame() {
+  state = { current: 0, qIndex: 0, score: 0, streak: 0, bestStreak: 0, correct: 0, fooled: 0 };
+  $('start-screen').style.display = 'none';
+  $('end-screen').classList.remove('active');
+  $('game-screen').classList.add('active');
+  updateScore();
+  buildProgress();
+  showScene();
+}
+
+function updateScore() {
+  $('score').textContent = state.score;
+  const badge = $('streak-badge');
+  if (state.streak >= 2) {
+    badge.innerHTML = ` <span class="streak-badge">×${state.streak} STREAK</span>`;
+  } else {
+    badge.innerHTML = '';
+  }
+}
+
+function buildProgress() {
+  const wrap = $('progress');
+  wrap.innerHTML = '';
+  for (let i = 0; i < SCENES.length; i++) {
+    const b = document.createElement('div');
+    b.className = 'progress-block';
+    b.id = `pb-${i}`;
+    wrap.appendChild(b);
+  }
+}
+
+function refreshProgress() {
+  for (let i = 0; i < SCENES.length; i++) {
+    const el = $(`pb-${i}`);
+    el.classList.remove('done', 'current');
+    if (i < state.current) el.classList.add('done');
+    else if (i === state.current) el.classList.add('current');
+  }
+}
+
+function showScene() {
+  refreshProgress();
+  const scene = SCENES[state.current];
+  const container = $('phase-container');
+  container.innerHTML = `
+    <div class="phase-label">PHASE 1 — OBSERVE</div>
+    <div class="scene-stage">
+      <div class="scene-title">${scene.name}</div>
+      <div class="scene-subtitle">Memorize everything you can</div>
+      <div class="countdown" id="countdown">4</div>
+      <div class="emoji-grid" id="emoji-grid"></div>
+    </div>
+  `;
+  const grid = $('emoji-grid');
+  scene.grid.forEach((emoji, i) => {
+    const cell = document.createElement('div');
+    cell.className = 'emoji-cell';
+    cell.textContent = emoji;
+    cell.style.animationDelay = `${i * 8}ms`;
+    grid.appendChild(cell);
+  });
+  let timeLeft = 4;
+  const cd = $('countdown');
+  const interval = setInterval(() => {
+    timeLeft--;
+    if (timeLeft <= 0) {
+      clearInterval(interval);
+      showBlackout();
+    } else {
+      cd.textContent = timeLeft;
+      if (timeLeft <= 2) cd.classList.add('warning');
+    }
+  }, 1000);
+}
+
+function showBlackout() {
+  const container = $('phase-container');
+  container.innerHTML = `
+    <div class="phase-label">PHASE 2 — BLACKOUT</div>
+    <div class="blackout-stage">
+      <div class="blackout-text">REMEMBER</div>
+      <div class="blackout-sub">questions incoming</div>
+    </div>
+  `;
+  setTimeout(() => {
+    state.qIndex = 0;
+    showQuestion();
+  }, 2000);
+}
+
+function showQuestion() {
+  const scene = SCENES[state.current];
+  const q = scene.statements[state.qIndex];
+  const container = $('phase-container');
+  container.innerHTML = `
+    <div class="phase-label">PHASE 3 — JUDGE</div>
+    <div class="question-stage">
+      <div class="question-meta">Question ${state.qIndex + 1} of ${scene.statements.length} · ${scene.name}</div>
+      <div class="question-text">${q.text}</div>
+      <div class="choice-row">
+        <button class="btn btn-real" id="real-btn">REAL</button>
+        <button class="btn btn-fake" id="fake-btn">FAKEEE</button>
+      </div>
+    </div>
+  `;
+  $('real-btn').addEventListener('click', () => answer('REAL'));
+  $('fake-btn').addEventListener('click', () => answer('FAKEEE'));
+}
+
+function answer(choice) {
+  const scene = SCENES[state.current];
+  const q = scene.statements[state.qIndex];
+  const correct = choice === q.answer;
+  let points = 0;
+  if (correct) {
+    state.correct++;
+    state.streak++;
+    if (state.streak > state.bestStreak) state.bestStreak = state.streak;
+    // base 50 + streak bonus
+    points = 50 + (state.streak >= 2 ? (state.streak - 1) * 25 : 0);
+    state.score += points;
+  } else {
+    state.fooled++;
+    state.streak = 0;
+  }
+  updateScore();
+  showVerdict(correct, q, points);
+}
+
+function showVerdict(correct, q, points) {
+  const container = $('phase-container');
+  const isLastQ = state.qIndex >= SCENES[state.current].statements.length - 1;
+  const isLastScene = state.current >= SCENES.length - 1;
+  let nextLabel = 'Next statement →';
+  if (isLastQ && !isLastScene) nextLabel = 'Next scene →';
+  if (isLastQ && isLastScene) nextLabel = 'See your verdict →';
+  container.innerHTML = `
+    <div class="phase-label">${correct ? 'CORRECT' : 'YOUR BRAIN LIED'}</div>
+    <div class="verdict ${correct ? 'correct' : 'incorrect'}">
+      <div class="verdict-result">${correct ? '✓ RIGHT' : '✗ FOOLED'}</div>
+      <div class="verdict-points">${correct ? `+${points} POINTS` : 'NO POINTS · STREAK BROKEN'}${correct && state.streak >= 2 ? ` <strong>(×${state.streak} STREAK)</strong>` : ''}</div>
+      <div class="verdict-explain"><em>The truth:</em> ${q.explain}</div>
+      <button class="btn" id="next-btn">${nextLabel}</button>
+    </div>
+  `;
+  $('next-btn').addEventListener('click', advance);
+}
+
+function advance() {
+  const scene = SCENES[state.current];
+  state.qIndex++;
+  if (state.qIndex >= scene.statements.length) {
+    state.current++;
+    if (state.current >= SCENES.length) {
+      endGame();
+      return;
+    }
+    showScene();
+  } else {
+    showQuestion();
+  }
+}
+
+function endGame() {
+  $('game-screen').classList.remove('active');
+  $('end-screen').classList.add('active');
+  $('final-score').textContent = state.score;
+  $('stat-correct').textContent = `${state.correct}/20`;
+  $('stat-fooled').textContent = state.fooled;
+  $('stat-streak').textContent = state.bestStreak;
+  // Verdict text
+  const pct = state.correct / 20;
+  let headline = '', desc = '';
+  if (pct >= 0.93) {
+    headline = "Your memory is uncanny.";
+    desc = "Either you're a savant or you got lucky. Your brain refused to fill in any blanks.";
+  } else if (pct >= 0.73) {
+    headline = "Sharper than most.";
+    desc = "Your memory is reliable but not infallible. The brain still snuck in a few false memories.";
+  } else if (pct >= 0.53) {
+    headline = "Average — and that's the scary part.";
+    desc = "Most people score here. It proves how easily our brains invent details that never existed.";
+  } else if (pct >= 0.33) {
+    headline = "Your brain is making things up.";
+    desc = "False memories filled in more than half your answers. This is exactly how eyewitness testimony goes wrong.";
+  } else {
+    headline = "Confidently wrong.";
+    desc = "Your brain wrote its own version of the scenes. This is the 'Mandela Effect' in action.";
+  }
+  $('verdict-headline').textContent = headline;
+  $('verdict-desc').textContent = desc;
+}
+
+$('start-btn').addEventListener('click', startGame);
+$('restart-btn').addEventListener('click', startGame);
+</script>
+</body>
+</html>
